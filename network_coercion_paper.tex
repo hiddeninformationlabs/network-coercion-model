@@ -91,19 +91,19 @@ The contributions of this paper are as follows:
 
 \subsection{Threshold and Contagion Models}
 
-The threshold model of collective behavior \citep{granovetter1978threshold} established that individual adoption depends on the fraction of an agent's contacts who have already adopted. \citet{watts2002simple} extended this to network settings, demonstrating that cascade dynamics depend on the interplay of network structure and threshold heterogeneity. \citet{centola2007complex} distinguished simple contagion (one contact suffices) from complex contagion (multiple contacts required), showing that clustered networks facilitate complex contagion by providing the redundant social reinforcement needed to push agents past their thresholds.
+The threshold model of collective behavior \citep{granovetter1978threshold} established that individual adoption depends on the fraction of an agent's contacts who have already adopted. \citet{watts2002simple} extended this to network settings, demonstrating that cascade dynamics depend on the interplay of network structure and threshold heterogeneity. \citet{centola2007complex} distinguished simple contagion (one contact suffices) from complex contagion (multiple contacts required), showing that clustered networks facilitate complex contagion by providing the redundant social reinforcement needed to push agents past their thresholds. Centola's subsequent experimental and theoretical work \citep{centola2018behavior} consolidated this into a general theory: behaviors that require social reinforcement spread through wide bridges (clustered ties) rather than the long ties that accelerate viral diffusion. More recent work has shown that whether contagion behaves as simple or complex can itself be topology-dependent \citep{horsevad2022transition} and that multiple interacting simple contagions produce population-level dynamics indistinguishable from complex contagion \citep{hebert2020macroscopic}, complicating any attempt to infer mechanism from aggregate adoption curves.
 
 These models track adoption as a binary outcome. None distinguish between adoption that is consistent with private preference and adoption that contradicts it.
 
 \subsection{Network Topology and Diffusion}
 
-The structural properties of networks (degree distribution, clustering coefficient, path length, community structure) shape contagion dynamics in well-characterized ways. Scale-free networks with power-law degree distributions \citep{barabasi1999emergence} accelerate simple contagion through hub-mediated spreading \citep{pastor2001epidemic}. Small-world networks with high clustering and short path lengths \citep{watts1998collective} facilitate complex contagion through local reinforcement.
+The structural properties of networks (degree distribution, clustering coefficient, path length, community structure) shape contagion dynamics in well-characterized ways. Scale-free networks with power-law degree distributions \citep{barabasi1999emergence} accelerate simple contagion through hub-mediated spreading \citep{pastor2001epidemic}. Small-world networks with high clustering and short path lengths \citep{watts1998collective} facilitate complex contagion through local reinforcement. \citet{guilbeault2021topological} demonstrated that standard centrality measures (degree, betweenness, eigenvector) systematically misidentify the most influential nodes for complex contagion, introducing alternative topological measures grounded in wide-bridge structure. This parallels our finding that resistant neighbor fraction, a local compositional measure, outpredicts all standard centrality measures in determining coercion outcomes.
 
 Prior work has established that clustering affects the \textit{rate} of adoption \citep{centola2010spread, miller2009spread}. We extend this by asking whether clustering affects the \textit{nature} of adoption, specifically, whether it protects against coerced adoption among agents with negative private preferences.
 
 \subsection{Opinion Dynamics and Belief Updating}
 
-The DeGroot model \citep{degroot1974reaching} and its extensions \citep{friedkin1990social} describe how agents update beliefs toward the weighted average of their neighbors' beliefs. This produces consensus in connected networks but does not track whether the consensus reflects genuine preference convergence or preference overwriting. Our preference drift mechanism is grounded in this tradition, implemented as a DeGroot-style update on private utility, enabling us to distinguish agents whose preferences were genuinely changed from those who were coerced while retaining their original preference.
+The DeGroot model \citep{degroot1974reaching} and its extensions \citep{friedkin1990social} describe how agents update beliefs toward the weighted average of their neighbors' beliefs. This produces consensus in connected networks but does not track whether the consensus reflects genuine preference convergence or preference overwriting. A growing body of work distinguishes between expressed and private opinions under social pressure. \citet{cheng2019opinion} model group pressure in bounded confidence dynamics, showing that conformity pressure can drive expressed consensus while private opinions remain polarized. \citet{ye2023expressed} formalize asynchronous expressed and private opinion dynamics on influence networks, demonstrating that the gap between expressed and private opinions persists at equilibrium. For a recent survey of bounded confidence models, see \citet{bernardo2024bounded}. Our model contributes to this line of work by tracking the gap between private preference and adoption behavior across distinct network topologies, and by measuring the structural features that determine the size of this gap. Our preference drift mechanism is grounded in the DeGroot tradition, implemented as a DeGroot-style update on private utility, enabling us to distinguish agents whose preferences were genuinely changed from those who were coerced while retaining their original preference.
 
 \subsection{Frankfurt and Structural Unfreedom}
 
@@ -392,7 +392,7 @@ All three thresholds produce the same predictor ranking, the same direction of e
 
 \subsection{The Invisible Coercion Problem}
 
-The central finding of this paper is that standard adoption metrics are structurally blind to coercion. At peak pressure regime, approximately 50\% of adopters across all topologies adopted against their private preference. Standard contagion models report adoption rate; ours reveals that roughly half of that adoption was coerced. A system designer, policymaker, or platform operator measuring only adoption would see a successful diffusion process and miss that a substantial fraction of participants were structurally compelled.
+The central finding of this paper is that standard adoption metrics are structurally blind to coercion. At peak pressure regime, approximately 50\% of adopters across all topologies adopted against their private preference. Standard contagion models report adoption rate; ours reveals that roughly half of that adoption was coerced. A system designer, policymaker, or platform operator measuring only adoption would see a successful diffusion process and miss that a substantial fraction of participants were structurally compelled. This blindness is compounded by recent findings that multiple interacting simple contagions produce population-level curves indistinguishable from complex contagion \citep{hebert2020macroscopic}: if the mechanism of spread is already ambiguous from aggregate data, the nature of individual adoption (willing versus coerced) is even more so.
 
 The preference drift extension sharpens this problem. Under fast drift, 63.1\% of adopters are either coerced or converted (initially resistant, preference rewritten). The converted agents are particularly concerning: they adopted willingly \textit{by the time they adopted}, but only because sustained network pressure shifted their evaluative baseline. No post-hoc measurement of their preference at the time of adoption would detect this. The coercion is invisible not only to the observer but potentially to the agent.
 
@@ -408,7 +408,7 @@ We offer this as a direction for future empirical work, not as a claim our simul
 
 If network geometry determines coercion vulnerability, then designing or modifying network topology is an intervention on autonomy. Platform architectures that fragment local clustering (algorithmic feed curation, interest-based rather than community-based grouping) and route connections through central hubs (recommendation algorithms, influencer amplification) shift populations from protective topologies toward vulnerable ones.
 
-This has implications for technology governance, institutional design, and community planning. Interventions that preserve or build local clustering, such as supporting neighborhood-level social structures, designing platforms that maintain triadic closure, ensuring bidirectional communication channels) are structural protections against coercion that operate independently of individual resilience or information literacy. There is a productive irony here: the same clustering that \citet{centola2010spread} identified as the engine of complex contagion is what our model identifies as the shield against coerced adoption. A platform designer who fragments clustering to slow unwanted contagion simultaneously removes the structural conditions that protect individual autonomy.
+This has implications for technology governance, institutional design, and community planning. Interventions that preserve or build local clustering, such as supporting neighborhood-level social structures, designing platforms that maintain triadic closure, ensuring bidirectional communication channels) are structural protections against coercion that operate independently of individual resilience or information literacy. There is a productive irony here: the same clustering that \citet{centola2018behavior} identified as the engine of complex contagion is what our model identifies as the shield against coerced adoption. A platform designer who fragments clustering to slow unwanted contagion simultaneously removes the structural conditions that protect individual autonomy.
 
 The BA variance finding adds a distinct policy concern. In hub-dominated networks, coercion outcomes are unpredictable. A policymaker cannot forecast whether a given intervention will produce high or low coercion because the outcome depends on initial conditions relative to hub positions. This is a fundamentally different governance challenge than the deterministic ER case or the predictably protective WS case.
 
@@ -452,15 +452,30 @@ Berns, G.~S., Chappelow, J., Zink, C.~F., Pagnoni, G., Martin-Skurski, M.~E., \&
 Neurobiological correlates of social conformity and independence during mental rotation.
 \textit{Biological Psychiatry}, 58(3), 245--253.
 
+\bibitem[Bernardo et al., 2024]{bernardo2024bounded}
+Bernardo, C., Altafini, C., Proskurnikov, A., \& Vasca, F. (2024).
+Bounded confidence opinion dynamics: A survey.
+\textit{Automatica}, 159, 111302.
+
 \bibitem[Centola, 2010]{centola2010spread}
 Centola, D. (2010).
 The spread of behavior in an online social network experiment.
 \textit{Science}, 329(5996), 1194--1197.
 
+\bibitem[Centola, 2018]{centola2018behavior}
+Centola, D. (2018).
+\textit{How Behavior Spreads: The Science of Complex Contagions}.
+Princeton University Press.
+
 \bibitem[Centola \& Macy, 2007]{centola2007complex}
 Centola, D., \& Macy, M. (2007).
 Complex contagions and the weakness of long ties.
 \textit{American Journal of Sociology}, 113(3), 702--734.
+
+\bibitem[Cheng \& Yu, 2019]{cheng2019opinion}
+Cheng, C., \& Yu, C. (2019).
+Opinion dynamics with bounded confidence and group pressure.
+\textit{Physica A}, 532, 121900.
 
 \bibitem[DeGroot, 1974]{degroot1974reaching}
 DeGroot, M.~H. (1974).
@@ -492,6 +507,21 @@ Gross, T., \& Blasius, B. (2008).
 Adaptive coevolutionary networks: A review.
 \textit{Journal of the Royal Society Interface}, 5(20), 259--271.
 
+\bibitem[Guilbeault \& Centola, 2021]{guilbeault2021topological}
+Guilbeault, D., \& Centola, D. (2021).
+Topological measures for identifying and predicting the spread of complex contagions.
+\textit{Nature Communications}, 12, 4430.
+
+\bibitem[H\'{e}bert-Dufresne et al., 2020]{hebert2020macroscopic}
+H\'{e}bert-Dufresne, L., Scarpino, S.~V., \& Young, J.-G. (2020).
+Macroscopic patterns of interacting contagions are indistinguishable from social reinforcement.
+\textit{Nature Physics}, 16(4), 426--431.
+
+\bibitem[Horsevad et al., 2022]{horsevad2022transition}
+Horsevad, N., Mateo, D., Kooij, R.~E., Barrat, A., \& Bouffanais, R. (2022).
+Transition from simple to complex contagion in collective decision-making.
+\textit{Nature Communications}, 13, 1442.
+
 \bibitem[Klucharev et al., 2009]{klucharev2009reinforcement}
 Klucharev, V., Hyto\"{o}nen, K., Rijpkema, M., Smidts, A., \& Fern\'{a}ndez, G. (2009).
 Reinforcement learning signal predicts social conformity.
@@ -521,6 +551,11 @@ A simple model of global cascades on random networks.
 Watts, D.~J., \& Strogatz, S.~H. (1998).
 Collective dynamics of `small-world' networks.
 \textit{Nature}, 393(6684), 440--442.
+
+\bibitem[Ye et al., 2023]{ye2023expressed}
+Ye, M., Xia, W., \& Liang, H. (2023).
+Asynchronous expressed and private opinion dynamics on influence networks.
+\textit{IEEE Transactions on Control of Network Systems}, 10(2), 544--555.
 
 \end{thebibliography}
 
