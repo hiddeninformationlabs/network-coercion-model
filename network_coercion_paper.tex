@@ -18,6 +18,16 @@
 \usepackage{algpseudocode}
 \usepackage{tabularx}
 \usepackage{float}
+\usepackage{fancyhdr}
+
+% Preprint header
+\fancypagestyle{preprint}{%
+  \fancyhf{}
+  \fancyhead[C]{\small\textcolor{gray}{Preprint --- Not peer reviewed}}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+\pagestyle{preprint}
 
 \hypersetup{
     colorlinks=true,
@@ -42,7 +52,7 @@ Anna Maria Matziorinis\thanks{Corresponding author. Email: \texttt{hili@posteo.c
 \textit{Hidden Information Labs Institute}
 }
 
-\date{}
+\date{Preprint -- February 2026}
 
 % ══════════════════════════════════════════════════════════════
 \begin{document}
