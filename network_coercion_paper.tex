@@ -5,6 +5,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{graphicx}
+\graphicspath{{../figures/}}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{hyperref}
@@ -252,6 +253,20 @@ At peak regime, the ER--WS contrast yields Cohen's $d = 0.99$ ($p < 0.001$), a l
 
 The beta ratio sweep (Dataset 2) confirms that topology effects peak at intermediate pressure. The maximum $\eta^2$ of 0.137 occurs at $\betalocal/\betaresist = 4.5$, with values dropping below 0.01 at ratios below 2.0 or above 8.0.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig1_regime_dependence.png}
+\caption{Coercion rate as a function of social pressure ratio across topologies. Shaded bands show $\pm$1 SD across 30 seeds. Topology differentiation peaks at intermediate pressure ($\betalocal/\betaresist \approx 4.5$) and vanishes at extremes. Watts--Strogatz networks consistently produce the lowest coercion rates in the active regime.}
+\label{fig:regime}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig3_topology_regime.png}
+\caption{Coercion rate distributions by topology at each pressure regime. Each point is one simulation run (30 seeds per topology). At low and high pressure, topologies are indistinguishable. At peak pressure, ER produces the highest and most tightly clustered coercion rates, WS the lowest, and BA the widest spread.}
+\label{fig:topo_regime}
+\end{figure}
+
 \subsection{Structural Predictors of Coercion}
 
 Table~\ref{tab:regression} presents standardized logistic regression coefficients predicting coerced adoption among resistant agents ($u_i < 0$) at peak regime.
@@ -274,6 +289,13 @@ Degree & $+0.093$ & 1.098 & 0.007 \\
 \end{table}
 
 The ranking is: (1) individual preference strength, (2) resistant neighbor fraction, (3) clustering coefficient, (4) betweenness centrality, (5) degree. All five predictors are significant at peak regime. Negative coefficients indicate protection: higher values of the predictor reduce the probability of coercion. Degree is the only risk factor, with higher-degree agents slightly more likely to be coerced ($\OR = 1.098$), consistent with greater exposure to social pressure.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{fig2_regression_coefficients.png}
+\caption{Odds ratios from logistic regression predicting coerced adoption among resistant agents at peak regime ($N = 16{,}918$). Error bars show 95\% confidence intervals. Resistant neighbor fraction is the strongest structural predictor (OR = 0.638), followed by clustering coefficient (OR = 0.736). Values below 1.0 indicate protection from coercion.}
+\label{fig:regression}
+\end{figure}
 
 \subsubsection{Predictor Rankings Shift Across Regimes}
 
@@ -341,6 +363,13 @@ $n$ & \textbf{ER coercion} & \textbf{WS coercion} & \textbf{Cohen's} $d$ & $p$ \
 
 The effect size nearly doubles from $n = 300$ to $n = 2{,}000$. At $n = 2{,}000$, WS adoption drops to 27.2\% (vs.\ 86.6\% for ER), indicating that clustered topology increasingly resists contagion at scale. ER coercion rates tighten (SD = 1.0\% at $n = 2{,}000$), suggesting convergence to a deterministic equilibrium, while WS maintains moderate variance (SD = 5.4\%).
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig4_scale_robustness.png}
+\caption{Cohen's $d$ for the ER--WS coercion rate difference at peak regime as a function of network size. The protective effect of clustered topology strengthens with scale, exceeding the ``large effect'' threshold ($d = 0.8$) at all tested sizes and reaching $d = 2.04$ at $n = 2{,}000$.}
+\label{fig:scale}
+\end{figure}
+
 \subsection{Preference Drift}
 
 When agent preferences are allowed to drift toward neighborhood averages (Equation~\ref{eq:drift}), three changes occur (Table~\ref{tab:drift}).
@@ -363,6 +392,13 @@ Fast ($\delta = 0.05$) & 100.9 & 1.2 & 171.6 & 62.7\% & 63.1\% \\
 First, coercion increases: from 118.3 to 171.6 coerced agents per run under fast drift. Second, a small but meaningful number of agents (155 across all runs at fast drift) have their preferences flipped from negative to positive, appearing as willing adopters in final-state measurement. Third, the model's overall explanatory power decreases (pseudo-$R^2$ from 0.232 to 0.034) because preference drift introduces noise into the utility signal.
 
 The structural predictors survive drift. At fast drift, RNF remains significant ($\OR = 0.806$, $p < 10^{-17}$) and clustering remains significant ($\OR = 0.794$, $p < 10^{-23}$). Individual preference strength, by contrast, loses most of its predictive power ($\OR$ shifts from 0.269 to 0.718), consistent with the interpretation that drift erodes the conviction that would otherwise protect against coercion.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig5_preference_drift.png}
+\caption{Population outcome breakdown by preference drift rate at peak regime. Coercion rises from 39\% to 57\% of the population as drift increases. At fast drift ($\delta = 0.05$), a small fraction of agents are \textit{converted}: their preferences were rewritten before adoption, making their coercion invisible to any post-hoc measurement. Percentages show combined coerced and converted fractions.}
+\label{fig:drift}
+\end{figure}
 
 \subsection{Coercion Threshold Robustness}
 
