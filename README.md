@@ -1,9 +1,10 @@
-# Network Geometry as a Determinant of Coerced Adoption
+# Structural Unfreedom in Social Contagion
 
-> An agent-based model of structural unfreedom in social contagion
+> How network topology determines coerced adoption
 
 **Paper:** Matziorinis, A.M. (2026). [ArXiv preprint](#) | [PDF](paper/network_coercion_paper.pdf)
-**Lab:** [Hidden Information Labs Institute](https://hiddeninformationlabs.io)
+**Author:** Anna Maria Matziorinis — anna.matziorinis@uib.no
+**Affiliations:** Hidden Information Labs Institute, Vancouver, Canada | Department of Clinical and Biological Psychology, University of Bergen
 
 ---
 
@@ -22,7 +23,7 @@ We split adoption into two measurable categories:
 
 This operationalizes the philosopher Harry Frankfurt's (1971) concept of *structural unfreedom*: you act unfreely when you could not have done otherwise, given the structural conditions you're in, even if you don't feel constrained.
 
-We then ask: what predicts which outcome an agent gets? The answer turns out to be network geometry.
+We then ask: what predicts which outcome an agent gets? The answer turns out to be network topology.
 
 ## Core findings
 
@@ -30,13 +31,15 @@ We then ask: what predicts which outcome an agent gets? The answer turns out to 
 
 **Who your neighbors are matters more than who you are.** Resistant neighbor fraction (the proportion of your contacts who privately oppose adoption) is the strongest structural predictor of protection from coercion (OR = 0.638, p < 10⁻¹¹¹). Stronger than degree, betweenness, or clustering alone.
 
-**Topology effects are regime-dependent.** At low social pressure, everyone resists regardless of network shape. At extreme pressure, everyone capitulates. The window where network geometry determines outcomes sits at intermediate pressure, peaking at β₁/β₄ = 4.5 (η² = 0.137). This is where most real social systems likely operate.
+**Topology effects are regime-dependent.** At low social pressure, everyone resists regardless of network shape. At extreme pressure, everyone capitulates. The window where network topology determines outcomes sits at intermediate pressure, peaking at β₁/β₄ = 4.5 (η² = 0.137). This is where most real social systems likely operate.
 
 **The effect strengthens with scale.** Watts-Strogatz (clustered) networks produce significantly less coercion than Erdős-Rényi (random) networks, and this gap widens from Cohen's d = 0.99 at n = 300 to d = 2.04 at n = 2,000.
 
 **Preference drift makes it worse, not better.** When agent preferences are allowed to shift toward their neighbors' views (DeGroot-style updating), coercion rises from 52.5% to 62.7% of adopters. A small number of agents (155 across all fast-drift runs) have their preferences fully rewritten: they end up adopting *willingly* by the time they adopt, but only because sustained network pressure changed what they wanted. These agents are invisible to any post-hoc measurement.
 
 **The findings don't depend on how you define coercion.** Three different thresholds for classifying coercion (strict, original, lenient) produce the same predictor rankings, same directions, same significance levels.
+
+**Counterfactual experiments confirm structural causation.** Reshuffling utilities across network positions (breaking any preference-topology correlation) preserves RNF's predictive power (OR = 0.581, p < 0.001). Rewiring networks to matched-density random graphs eliminates the topology gap entirely. The protective effect is genuinely structural, not compositional. Spatial autocorrelation analysis (Moran's I) further shows that coercion is spatially clustered in ways a null model cannot reproduce.
 
 ## Reproducing the results
 
@@ -62,8 +65,9 @@ python scripts/analyze_extended.py     # Drift, scale robustness, threshold robu
 ### Option B: Regenerate everything from scratch
 
 ```bash
-python scripts/run_production.py   # ~15 min. Datasets 1-3.
-python scripts/run_extended.py     # ~45 min. Datasets 4-6 (drift, scale to n=2000, thresholds).
+python scripts/run_production.py       # ~15 min. Datasets 1-3.
+python scripts/run_extended.py         # ~45 min. Datasets 4-6 (drift, scale to n=2000, thresholds).
+python scripts/run_counterfactual.py   # ~2 min. Datasets 7-8 (decomposition, Moran's I).
 ```
 
 Then run the analysis scripts above on the fresh output.
@@ -148,15 +152,16 @@ Three topologies, all matched on mean degree (k ≈ 6):
 ├── scripts/
 │   ├── run_production.py      # Generate datasets 1-3
 │   ├── run_extended.py        # Generate datasets 4-6
+│   ├── run_counterfactual.py  # Generate datasets 7-8
 │   ├── analyze_production.py  # Paper Tables 1-5, regressions
 │   └── analyze_extended.py    # Drift, scale, threshold analysis
-├── data/                      # Pre-generated CSVs (~46 MB)
+├── data/                      # Pre-generated CSVs (~57 MB)
 │   └── README.md              # Complete data dictionary
 ├── paper/
 │   ├── network_coercion_paper.tex
 │   └── network_coercion_paper.pdf
 ├── tests/                     # Development verification scripts
-├── figures/
+├── figures/                   # All 7 paper figures (PDF + PNG)
 ├── requirements.txt
 ├── CITATION.cff
 └── LICENSE                    # MIT
@@ -172,17 +177,17 @@ Three topologies, all matched on mean degree (k ≈ 6):
 | 4 | `ext_drift_agents.csv` | 81,001 | Preference drift: δ = 0.0, 0.02, 0.05 |
 | 5 | `ext_scale_summaries.csv` | 181 | Large scale: n = 500, 1,000, 2,000 |
 | 6 | `ext_threshold_agents.csv` | 27,001 | Three coercion definitions |
-
-`ext_scale_agents.csv` (~210K rows) was too large to include. Regenerate with `scripts/run_extended.py`.
+| 7 | `counterfactual_agents.csv` | 81,000 | Structural vs compositional decomposition |
+| 8 | `counterfactual_morans.csv` | 90 | Spatial autocorrelation: model vs null |
 
 Full column definitions in [`data/README.md`](data/README.md).
 
 ## Citation
 
 ```bibtex
-@article{matziorinis2026network,
-  title={Network Geometry as a Determinant of Coerced Adoption:
-         An Agent-Based Model of Structural Unfreedom in Social Contagion},
+@article{matziorinis2026structural,
+  title={Structural Unfreedom in Social Contagion:
+         How Network Topology Determines Coerced Adoption},
   author={Matziorinis, Anna Maria},
   year={2026},
   journal={arXiv preprint arXiv:XXXX.XXXXX}
@@ -195,5 +200,6 @@ MIT. See [LICENSE](LICENSE).
 
 ## Contact
 
-Anna Maria Matziorinis — hili@posteo.ca
-[Hidden Information Labs Institute](https://hiddeninformationlabs.io)
+Anna Maria Matziorinis — anna.matziorinis@uib.no
+Hidden Information Labs Institute, Vancouver, Canada
+Department of Clinical and Biological Psychology, University of Bergen
