@@ -1,4 +1,4 @@
-# Structural Unfreedom in Social Contagion
+\# Structural Unfreedom in Social Contagion
 
 > How network topology determines coerced adoption
 
