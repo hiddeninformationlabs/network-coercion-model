@@ -2,7 +2,7 @@
 
 > How network topology determines coerced adoption
 
-**Paper:** Matziorinis, A.M. (2026). [ArXiv preprint](#) | [PDF](paper/network_coercion_paper.pdf)
+**Paper:** Matziorinis, A.M. (2026).
 **Author:** Anna Maria Matziorinis — anna.matziorinis@uib.no
 **Affiliations:** Hidden Information Labs Institute, Vancouver, Canada | Department of Clinical and Biological Psychology, University of Bergen
 
