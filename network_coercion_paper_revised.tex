@@ -1,0 +1,674 @@
+\documentclass[11pt, a4paper]{article}
+
+% ── Packages ──
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\graphicspath{{../figures/}}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+% Preprint header
+\fancypagestyle{preprint}{%
+  \fancyhf{}
+  \fancyhead[C]{\small\textcolor{gray}{Preprint --- Not peer reviewed}}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+\pagestyle{preprint}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black
+}
+
+% ── Custom commands ──
+\newcommand{\betalocal}{\beta_{\text{local}}}
+\newcommand{\betaglobal}{\beta_{\text{global}}}
+\newcommand{\betamemory}{\beta_{\text{memory}}}
+\newcommand{\betaresist}{\beta_{\text{resist}}}
+\newcommand{\RNF}{\text{RNF}}
+\newcommand{\OR}{\text{OR}}
+
+\title{Structural Unfreedom in Social Contagion:\\
+How Network Topology Determines Coerced Adoption}
+
+\author{
+Anna Maria Matziorinis\thanks{Corresponding author. Email: \texttt{anna.matziorinis@uib.no}}\\
+\textit{Hidden Information Labs Institute, Vancouver, Canada}\\
+\textit{Department of Clinical and Biological Psychology, University of Bergen}
+}
+
+\date{Preprint -- February 2026}
+
+% ══════════════════════════════════════════════════════════════
+\begin{document}
+\maketitle
+
+% ── Abstract ──
+\begin{abstract}
+Standard models of social contagion measure whether individuals adopt a spreading behavior but not \textit{why}. We introduce a distinction between willing adoption (consistent with private preference) and coerced adoption (against private preference), operationalizing Frankfurt's (1971) concept of structural unfreedom within a network contagion framework. Using an agent-based model across Erd\H{o}s--R\'{e}nyi, Barab\'{a}si--Albert, and Watts--Strogatz topologies ($n=300$, 30 seeds per configuration, 80{,}925 agent-level observations), we find that network topology significantly determines coercion outcomes at intermediate social pressure, while individual preference strength dominates at extremes. Resistant neighbor fraction is the strongest structural predictor of protection from coercion ($\OR = 0.638$, $p < 0.001$, cluster-robust), followed by clustering coefficient ($\OR = 0.736$, $p = 0.007$). This inverts a canonical result: \citet{centola2007complex} showed that clustering facilitates complex contagion by providing redundant social reinforcement; we show that the same structural feature provides redundant \textit{resistance} reinforcement, protecting agents whose neighbors share their opposition. Watts--Strogatz networks produce significantly less coercion than Erd\H{o}s--R\'{e}nyi networks (Cohen's $d = 0.99$, $p < 0.001$), and this effect strengthens with scale ($d = 2.04$ at $n = 2{,}000$). When preferences are allowed to drift under social pressure, coercion increases from 52.5\% to 62.7\% of adopters, while resistant neighbor fraction remains a significant structural predictor and individual conviction loses predictive power. These findings are invariant to the operationalization threshold for coercion. Counterfactual experiments decomposing structural from compositional effects confirm that RNF's predictive power survives random reshuffling of utilities across network positions ($\OR = 0.581$, $p < 0.001$), while the topology gap vanishes entirely when networks are rewired to matched-density random graphs ($p = 0.745$). Spatial autocorrelation analysis (Moran's $I$) further demonstrates that the distribution of coerced agents is an emergent property of the contagion dynamics, not a mechanical artifact of the decision rule. We argue that adoption models that do not distinguish willing from coerced adoption are structurally blind to a class of outcomes with distinct ethical and policy implications.
+
+\medskip
+\noindent\textbf{Keywords:} social contagion, network topology, coercion, structural unfreedom, agent-based model, Frankfurt, clustering, resistant neighbor fraction
+\end{abstract}
+
+\clearpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Introduction}
+\label{sec:introduction}
+
+Social contagion models have produced a rich understanding of how behaviors, technologies, and norms spread through populations \citep{granovetter1978threshold, watts2002simple, centola2007complex}. These models share a common dependent variable: adoption. An individual either adopts or does not. The final adoption rate, the speed of diffusion, and the structural conditions enabling cascades constitute the primary objects of analysis.
+
+This framing omits a question that is both empirically tractable and ethically significant: among those who adopted, how many did so willingly?
+
+Consider a technology adoption cascade in which 80\% of a population adopts. Standard contagion metrics report this as a single number. But the population may contain individuals who adopted because they genuinely valued the technology and individuals who adopted despite privately opposing it, because accumulated social pressure from their network neighborhood exceeded their capacity to resist. From the perspective of adoption measurement, these two groups are identical. From the perspective of individual autonomy, they are fundamentally different.
+
+The philosophical groundwork for this distinction exists. \citet{frankfurt1971freedom} introduced the concept of structural unfreedom: an agent acts unfreely when they could not have done otherwise given the structural conditions in which they are embedded, regardless of whether they experience subjective constraint. Frankfurt's account was developed in the context of moral responsibility, not network science. But the structural logic transfers directly: if an agent's network position determines that they will adopt regardless of their private preference, that agent is structurally unfree in Frankfurt's sense.
+
+We operationalize this concept within a network contagion model. Each agent possesses a private utility for adoption (positive = favorable, negative = opposed). Social pressure from adopted neighbors, global adoption signals, and cumulative exposure history combine with private utility to determine adoption. When the combined pressure exceeds an agent's threshold and their private utility is negative, they adopt \textit{against their preference}. We classify this as coerced adoption and treat it as a distinct dependent variable from willing adoption.
+
+This reframing enables a new class of questions. Which structural features of an agent's network position predict coerced adoption? Do different network topologies produce different coercion rates, even when they produce similar adoption rates? Is there a pressure regime in which network topology determines coercion outcomes? And does the answer change when we allow preferences themselves to shift under sustained social pressure?
+
+One finding warrants early emphasis because it inverts a canonical result. \citet{centola2007complex, centola2010spread} established that clustered networks facilitate complex contagion: the redundant ties created by triadic closure provide the repeated social reinforcement needed to push agents past adoption thresholds. We find that the same structural feature, clustering, also provides redundant \textit{resistance} reinforcement. When an agent's neighbors share their opposition to adoption, the local social signal is consistent with the agent's private preference, and there is no pressure to override it. The mechanism is symmetric: clustering keeps neighbors aligned, and whether that alignment accelerates spread or blocks coercion depends on the composition of the local neighborhood. This suggests that clustering's role in contagion dynamics is not unidirectional but depends on the question being asked: it facilitates adoption \textit{and} protects against coercion, simultaneously, for different subpopulations within the same network.
+
+This paper makes six contributions. First, we introduce coerced adoption as a measurable dependent variable in network contagion, distinct from adoption \textit{per se}, grounded in Frankfurt's structural unfreedom. Second, using logistic regression on 80{,}925 agent-level observations, we identify resistant neighbor fraction and clustering coefficient as the primary structural predictors of protection from coercion. Third, we demonstrate that topology effects on coercion are regime-dependent, peaking at intermediate social pressure and vanishing at extremes. Fourth, we show that when preferences are allowed to drift under social pressure, coercion increases while becoming less visible to standard metrics, as agents whose preferences were rewritten by sustained neighborhood influence appear to adopt willingly. Fifth, we demonstrate scale robustness: the protective effect of clustered topology strengthens from $n = 300$ to $n = 2{,}000$. Sixth, we provide counterfactual identification by reshuffling utilities across network positions, which preserves RNF's predictive power ($\OR = 0.581$, $p < 0.001$), and by rewiring networks to matched-density random graphs, which eliminates the topology gap entirely, confirming that protection is structural rather than compositional. Spatial autocorrelation analysis further demonstrates that the distribution of coerced agents is an emergent property of the contagion dynamics, not a mechanical artifact of the decision rule.
+
+% ══════════════════════════════════════════════════════════════
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Threshold and Contagion Models}
+
+The threshold model of collective behavior \citep{granovetter1978threshold} established that individual adoption depends on the fraction of an agent's contacts who have already adopted. \citet{watts2002simple} extended this to network settings, demonstrating that cascade dynamics depend on the interplay of network structure and threshold heterogeneity. \citet{centola2007complex} distinguished simple contagion (one contact suffices) from complex contagion (multiple contacts required), showing that clustered networks facilitate complex contagion by providing the redundant social reinforcement needed to push agents past their thresholds. Centola's subsequent experimental and theoretical work \citep{centola2018behavior} consolidated this into a general theory: behaviors that require social reinforcement spread through wide bridges (clustered ties) rather than the long ties that accelerate viral diffusion. More recent work has shown that whether contagion behaves as simple or complex can itself be topology-dependent \citep{horsevad2022transition} and that multiple interacting simple contagions produce population-level dynamics indistinguishable from complex contagion \citep{hebert2020macroscopic}, complicating any attempt to infer mechanism from aggregate adoption curves.
+
+These models track adoption as a binary outcome. None distinguish between adoption that is consistent with private preference and adoption that contradicts it.
+
+\subsection{Network Topology and Diffusion}
+
+The structural properties of networks (degree distribution, clustering coefficient, path length, community structure) shape contagion dynamics in well-characterized ways. Scale-free networks with power-law degree distributions \citep{barabasi1999emergence} accelerate simple contagion through hub-mediated spreading \citep{pastor2001epidemic}. Small-world networks with high clustering and short path lengths \citep{watts1998collective} facilitate complex contagion through local reinforcement. \citet{guilbeault2021topological} demonstrated that standard centrality measures (degree, betweenness, eigenvector) systematically misidentify the most influential nodes for complex contagion, introducing alternative topological measures grounded in wide-bridge structure. This parallels our finding that resistant neighbor fraction, a local compositional measure, outpredicts all standard centrality measures in determining coercion outcomes.
+
+Prior work has established that clustering affects the \textit{rate} of adoption \citep{centola2010spread, miller2009spread}. We extend this by asking whether clustering affects the \textit{nature} of adoption, specifically, whether it protects against coerced adoption among agents with negative private preferences.
+
+\subsection{Opinion Dynamics and Belief Updating}
+
+The DeGroot model \citep{degroot1974reaching} and its extensions \citep{friedkin1990social} describe how agents update beliefs toward the weighted average of their neighbors' beliefs. This produces consensus in connected networks but does not track whether the consensus reflects genuine preference convergence or preference overwriting. A growing body of work distinguishes between expressed and private opinions under social pressure. \citet{cheng2019opinion} model group pressure in bounded confidence dynamics, showing that conformity pressure can drive expressed consensus while private opinions remain polarized. \citet{xia2023expressed} formalize asynchronous expressed and private opinion dynamics on influence networks, demonstrating that the gap between expressed and private opinions persists at equilibrium. For a recent survey of bounded confidence models, see \citet{bernardo2024bounded}. Our model contributes to this line of work by tracking the gap between private preference and adoption behavior across distinct network topologies, and by measuring the structural features that determine the size of this gap. Our preference drift mechanism is grounded in the DeGroot tradition, implemented as a DeGroot-style update on private utility, enabling us to distinguish agents whose preferences were genuinely changed from those who were coerced while retaining their original preference.
+
+\subsection{Frankfurt and Structural Unfreedom}
+
+\citet{frankfurt1971freedom} argued that an agent acts freely only if they could have done otherwise. Structural unfreedom arises when the conditions surrounding an agent make alternative action impossible, regardless of the agent's subjective experience. This concept has been extensively discussed in philosophy of action and moral responsibility \citep{fischer1998responsibility, mele2006free} but has not, to our knowledge, been operationalized in computational models of social dynamics.
+
+Our operationalization is deliberately simplified: an agent is coerced when they adopt despite negative private utility. This captures the core of Frankfurt's insight, that structural conditions can override individual preference, while acknowledging that a full Frankfurtian account would require modeling second-order volitions and counterfactual reasoning, which we flag as future work.
+
+% ══════════════════════════════════════════════════════════════
+\section{Model}
+\label{sec:model}
+
+\subsection{Agent Architecture}
+
+Each agent $i$ is characterized by five properties. The agent's private utility $u_i \sim \mathcal{N}(-0.1, 0.3)$ represents their genuine preference for or against adoption, where negative values indicate opposition; the distribution is centered slightly negative, creating a population where approximately 63\% of agents privately oppose the spreading behavior. The adoption threshold $\tau_i \sim |\mathcal{N}(0.3, 0.1)|$ specifies the total pressure required to trigger a state change. The resistance parameter $r_i \sim |\mathcal{N}(0.2, 0.08)|$ captures individual conviction strength, acting as a drag term in the utility equation. Two dynamic properties evolve over the course of the simulation: fatigue $f_i(t)$, which represents accumulated exposure drain and starts at zero, increasing under sustained pressure; and memory $m_i(t)$, which tracks cumulative exposure history with exponential decay.
+
+Agents occupy one of six states: \textsc{Unaware}, \textsc{Exposed}, \textsc{Willing Adopter}, \textsc{Coerced Adopter}, \textsc{Fatigued}, and \textsc{Recovered}. The \textsc{Willing}/\textsc{Coerced} distinction is the core measurement.
+
+\subsection{Utility Equation}
+
+At each timestep $t$, the effective utility for agent $i$ is:
+
+\begin{equation}
+    U_i(t) = u_i + \betalocal \cdot \ell_i(t) \cdot e^{-f_i(t)} + \betaglobal \cdot g(t) + \betamemory \cdot m_i(t) - \betaresist \cdot r_i
+    \label{eq:utility}
+\end{equation}
+
+\noindent where:
+\begin{align*}
+    \ell_i(t) &= \frac{|\{j \in N(i) : j \text{ has adopted}\}|}{|N(i)|} & \text{(local pressure)} \\
+    g(t) &= \frac{|\{j : j \text{ has adopted}\}|}{n} & \text{(global pressure)} \\
+\end{align*}
+
+The coefficients $\betalocal$, $\betaglobal$, $\betamemory$, and $\betaresist$ weight the contribution of each term. These are not empirically calibrated to a specific domain but are systematically varied in parameter sweeps to map the coercion landscape.
+
+The local pressure term is grounded in \citeauthor{granovetter1978threshold}'s threshold model and \citeauthor{centola2007complex}'s complex contagion framework. The global pressure term follows DeGroot-style opinion dynamics. The memory term models repeated exposure lowering resistance, per \citeauthor{centola2010spread}'s finding that social reinforcement requires multiple contacts. The fatigue-weighted exponential decay on local pressure captures diminishing returns of sustained pressure.
+
+\subsection{State Transitions}
+
+Agent $i$ transitions to \textsc{Willing Adopter} if $U_i(t) > \tau_i$ and $u_i \geq 0$. Agent $i$ transitions to \textsc{Coerced Adopter} if $U_i(t) > \tau_i$ and $u_i < 0$. This is the Frankfurt operationalization: the agent acts (adopts) against their reflective preference (negative private utility) because structural conditions (network pressure) made the alternative (non-adoption) effectively unavailable.
+
+Transitions are computed simultaneously across all agents per timestep, preventing sequential cascade artifacts. Convergence is detected when no state changes occur for five consecutive steps.
+
+\subsection{Preference Drift Extension}
+
+In the extended model, active agents' private utilities shift toward the local neighborhood average at rate $\delta$:
+
+\begin{equation}
+    u_i(t+1) = u_i(t) + \delta \left( \bar{u}_{N(i)}(t) - u_i(t) \right)
+    \label{eq:drift}
+\end{equation}
+
+\noindent where $\bar{u}_{N(i)}(t)$ is the mean private utility among agent $i$'s neighbors. This creates a third outcome category: \textbf{converted} agents whose initial private utility was negative but whose preference was shifted to positive by sustained neighborhood influence before adoption. These agents appear willing in the final state but were initially resistant.
+
+\subsection{Network Topologies}
+
+We compare three canonical topologies, all matched on mean degree ($\bar{k} \approx 6$). The Erd\H{o}s--R\'{e}nyi (ER) model generates a random graph with connection probability $p = \bar{k}/(n-1)$, producing low clustering and a Poisson degree distribution. The Barab\'{a}si--Albert (BA) model uses preferential attachment with $m = 3$ new edges per node, yielding a power-law degree distribution and hub-dominated structure. The Watts--Strogatz (WS) model constructs a ring lattice with $k = 6$ nearest-neighbor connections and rewiring probability $p = 0.1$, producing high clustering and short path lengths characteristic of small-world networks.
+
+Matching mean degree ensures that differences in contagion dynamics arise from topological properties (clustering, degree distribution, hub structure) rather than raw connectivity.
+
+\subsection{Structural Features}
+
+For each agent $i$, we compute four structural features that serve as independent variables in the regression analysis. Degree $k_i$ is the number of network connections. The clustering coefficient $C_i$ measures the proportion of $i$'s neighbors that are connected to each other. Betweenness centrality $B_i$ captures the fraction of shortest paths between all other node pairs that pass through $i$. Finally, resistant neighbor fraction $\RNF_i$ is defined as the proportion of $i$'s neighbors with negative private utility at $t = 0$.
+
+These features are the independent variables in our regression analysis. They represent an agent's \textit{structural position} in the network, independent of their individual properties.
+
+% ══════════════════════════════════════════════════════════════
+\section{Experimental Design}
+\label{sec:experiments}
+
+\subsection{Production Sweep (Datasets 1--3)}
+
+\textbf{Dataset 1: Agent-level data at three pressure regimes.} $n = 300$ agents, 30 random seeds, three topologies, three pressure regimes: low ($\betalocal/\betaresist = 2.0$), peak ($\betalocal/\betaresist = 4.5$), and high ($\betalocal/\betaresist = 9.0$). Initial adopters: 8 agents ($\sim$2.7\%), seeded randomly. This yielded 270 runs and 80{,}925 agent-level observations.
+
+\textbf{Dataset 2: Beta ratio sweep.} $\betalocal \in \{0.3, 0.5, 0.7, 0.9, 1.1, 1.3\}$ crossed with $\betaresist \in \{0.1, 0.15, 0.2, 0.3, 0.4\}$, producing 29 unique $\betalocal/\betaresist$ ratios. 30 seeds per cell. 2{,}700 summary-level observations for regime mapping.
+
+\textbf{Dataset 3: Scale robustness (initial).} $n \in \{200, 400, 800\}$, peak regime parameters, 30 seeds per cell.
+
+\subsection{Extended Sweeps (Datasets 4--6)}
+
+\textbf{Dataset 4: Preference drift.} Three drift rates ($\delta = 0.0, 0.02, 0.05$) at peak regime, 30 seeds per cell, 81{,}000 agent-level observations. Tests whether structural predictors survive when preferences are mutable.
+
+\textbf{Dataset 5: Large-scale extension.} $n \in \{500, 1{,}000, 2{,}000\}$, peak regime, 20 seeds per cell. Tests scale robustness beyond $n = 800$.
+
+\textbf{Dataset 6: Coercion threshold robustness.} Post-hoc reclassification of coercion under three thresholds: strict ($u_i < -0.1$), original ($u_i < 0$), lenient ($u_i < 0.05$). 27{,}000 agent observations. Tests sensitivity to the operationalization of coercion.
+
+\textbf{Dataset 7: Counterfactual decomposition.} Three conditions per (topology $\times$ seed) at peak regime: baseline, reshuffled utilities (random permutation across nodes), and rewired network (Erd\H{o}s--R\'{e}nyi with matched density). 81{,}000 agent observations. Tests whether RNF's predictive power is structural or compositional.
+
+\textbf{Dataset 8: Spatial autocorrelation.} Moran's $I$ computed for model coercion outcomes vs.\ 100 null replicates (random adoption with matched rate) per run. 90 observations with null distributions. Tests whether coercion patterns are emergent from dynamics or mechanical artifacts of the decision rule.
+
+\subsection{Statistical Methods}
+
+The primary analysis is logistic regression predicting \textsc{is\_coerced} (binary) from the five structural features, with standardized coefficients for cross-predictor comparison. Because agents within the same simulation run share a network, seed configuration, and parameter settings, observations are not independent across runs. We therefore report cluster-robust standard errors \citep{cameron2008bootstrap}, clustering on simulation run (topology $\times$ seed, yielding 90 clusters at peak regime). This corrects for within-run correlation and produces conservative confidence intervals. We report odds ratios with 95\% cluster-robust confidence intervals and pseudo-$R^2$ (McFadden). Topology comparisons use Welch's $t$-test with Cohen's $d$ for effect size. Regime dependence is quantified using $\eta^2$ (ratio of between-topology variance to total variance in coercion rates) at each $\betalocal/\betaresist$ ratio.
+
+Note on agent counts: each run seeds 300 agents, but 8 initial adopters are excluded from agent-level analyses because their adoption is exogenous. Across 270 runs, this produces 80{,}925 agent-level observations (vs.\ the nominal 81{,}000).
+
+All simulations were implemented in Python~3.11 using NetworkX~3.2 for graph generation and statsmodels~0.14 for regression analysis.
+
+% ══════════════════════════════════════════════════════════════
+\section{Results}
+\label{sec:results}
+
+\subsection{Regime Dependence of Topology Effects}
+
+Topology effects on coercion are regime-dependent (Table~\ref{tab:regimes}). At low pressure ($\betalocal/\betaresist = 2.0$), all three topologies produce approximately 11\% coercion rates with negligible pairwise effect sizes ($d < 0.06$). At high pressure ($\betalocal/\betaresist = 9.0$), all produce approximately 62\% coercion with negligible differentiation ($d < 0.10$). At intermediate pressure ($\betalocal/\betaresist = 4.5$), topology significantly differentiates outcomes.
+
+\begin{table}[H]
+\centering
+\caption{Coercion rates by topology and pressure regime ($n = 300$, 30 seeds per cell).}
+\label{tab:regimes}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Regime} & \textbf{Topology} & \textbf{Adoption Rate} & \textbf{Coercion Rate} & \textbf{SD} \\
+\midrule
+\multirow{3}{*}{Low ($\betalocal/\betaresist = 2.0$)}
+    & ER & 18.7\% & 11.0\% & 4.4\% \\
+    & BA & 18.1\% & 11.1\% & 4.3\% \\
+    & WS & 17.9\% & 10.9\% & 3.6\% \\
+\midrule
+\multirow{3}{*}{Peak ($\betalocal/\betaresist = 4.5$)}
+    & ER & 81.8\% & 54.3\% & 4.5\% \\
+    & BA & 74.4\% & 49.6\% & 11.6\% \\
+    & WS & 69.9\% & 47.6\% & 8.6\% \\
+\midrule
+\multirow{3}{*}{High ($\betalocal/\betaresist = 9.0$)}
+    & ER & 97.2\% & 61.6\% & 2.8\% \\
+    & BA & 97.5\% & 61.8\% & 2.8\% \\
+    & WS & 96.8\% & 61.5\% & 2.7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At peak regime, the ER--WS contrast yields Cohen's $d = 0.99$ ($p < 0.001$), a large effect. The BA--ER contrast is medium ($d = -0.54$, $p = 0.042$), with BA producing lower mean coercion but substantially higher variance (SD = 11.6\% vs.\ 4.5\% for ER).
+
+The beta ratio sweep (Dataset 2) confirms that topology effects peak at intermediate pressure. The maximum $\eta^2$ of 0.137 occurs at $\betalocal/\betaresist = 4.5$, with values dropping below 0.01 at ratios below 2.0 or above 8.0.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig1_regime_dependence.png}
+\caption{Coercion rate as a function of social pressure ratio across topologies. Shaded bands show $\pm$1 SD across 30 seeds. Topology differentiation peaks at intermediate pressure ($\betalocal/\betaresist \approx 4.5$) and vanishes at extremes. Watts--Strogatz networks consistently produce the lowest coercion rates in the active regime.}
+\label{fig:regime}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig3_topology_regime.png}
+\caption{Coercion rate distributions by topology at each pressure regime. Each point is one simulation run (30 seeds per topology). At low and high pressure, topologies are indistinguishable. At peak pressure, ER produces the highest and most tightly clustered coercion rates, WS the lowest, and BA the widest spread.}
+\label{fig:topo_regime}
+\end{figure}
+
+\subsection{Structural Predictors of Coercion}
+
+Table~\ref{tab:regression} presents standardized logistic regression coefficients predicting coerced adoption among resistant agents ($u_i < 0$) at peak regime.
+
+\begin{table}[H]
+\centering
+\caption{Logistic regression predicting coerced adoption at peak regime ($N = 16{,}918$ resistant agents, 90 clusters, pseudo-$R^2 = 0.245$). Standard errors are cluster-robust, clustered on simulation run.}
+\label{tab:regression}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Predictor} & \textbf{Coeff.} & \textbf{OR} & \textbf{95\% CI} & $p$ \\
+\midrule
+$|u_i|$ (preference strength) & $-1.366$ & 0.255 & [0.218, 0.299] & $< 0.001$ \\
+Resistant neighbor fraction & $-0.450$ & 0.638 & [0.590, 0.689] & $< 0.001$ \\
+Clustering coefficient & $-0.307$ & 0.736 & [0.590, 0.919] & $0.007$ \\
+Betweenness centrality & $-0.210$ & 0.811 & [0.671, 0.981] & $0.031$ \\
+Degree & $+0.093$ & 1.098 & [0.933, 1.291] & $0.259$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ranking of significant predictors is: (1) individual preference strength, (2) resistant neighbor fraction, (3) clustering coefficient, (4) betweenness centrality. Degree does not reach significance after accounting for within-run clustering ($p = 0.259$, confidence interval spanning 1.0). Negative coefficients indicate protection: higher values of the predictor reduce the probability of coercion. Standard error inflation from naive to cluster-robust estimates ranges from 2.0$\times$ (RNF) to 6.0$\times$ (clustering), confirming substantial within-run correlation and validating the clustering correction.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{fig2_regression_coefficients.png}
+\caption{Odds ratios from logistic regression predicting coerced adoption among resistant agents at peak regime ($N = 16{,}918$, 90 clusters). Error bars show cluster-robust 95\% confidence intervals. Color indicates significance level. Resistant neighbor fraction is the strongest structural predictor (OR = 0.638), followed by clustering coefficient (OR = 0.736). Values below 1.0 indicate protection from coercion; degree crosses 1.0 and is not significant.}
+\label{fig:regression}
+\end{figure}
+
+\subsubsection{Predictor Rankings Shift Across Regimes}
+
+The predictor rankings are not stable across pressure regimes (Table~\ref{tab:regime_shift}).
+
+\begin{table}[H]
+\centering
+\caption{Top two predictors of coercion at each pressure regime (cluster-robust $p$-values).}
+\label{tab:regime_shift}
+\begin{tabular}{lllll}
+\toprule
+\textbf{Regime} & \textbf{\#1 Predictor} & $\OR$ & \textbf{\#2 Predictor} & $\OR$ \\
+\midrule
+Low & RNF & 0.906$^*$ & Betweenness & 0.928 (n.s.) \\
+Peak & $|u_i|$ & 0.255$^{***}$ & RNF & 0.638$^{***}$ \\
+High & $|u_i|$ & 0.075$^{***}$ & Degree & 1.155 (n.s.) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At low pressure, resistant neighbor fraction is the only significant predictor ($p = 0.022$); individual preference strength does not reach significance. At peak pressure, four of five features are significant (degree excepted). At high pressure, only individual preference strength survives ($\OR = 0.075$), indicating that at extreme pressure, only raw conviction protects against coercion; all structural features become irrelevant.
+
+\subsubsection{RNF Is Protective Across All Topologies}
+
+Resistant neighbor fraction predicts protection within each topology at peak regime (cluster-robust $p < 0.001$ in all cases): ER ($\OR = 0.594$), BA ($\OR = 0.673$), WS ($\OR = 0.620$). The RNF gap between coerced and protected resistant agents is positive and significant in all three topologies (Table~\ref{tab:rnf_gap}).
+
+\begin{table}[H]
+\centering
+\caption{RNF gap between protected and coerced resistant agents at peak regime.}
+\label{tab:rnf_gap}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Topology} & $n_{\text{coerced}}$ & $n_{\text{protected}}$ & \textbf{RNF gap} & \textbf{Cohen's} $d$ & $p$ \\
+\midrule
+ER & 4{,}021 & 1{,}605 & $+0.072$ & $+0.329$ & $< 10^{-30}$ \\
+BA & 3{,}532 & 2{,}114 & $+0.069$ & $+0.292$ & $< 10^{-27}$ \\
+WS & 3{,}120 & 2{,}526 & $+0.068$ & $+0.341$ & $< 10^{-37}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Barab\'{a}si--Albert Variance}
+
+BA networks do not produce higher mean coercion than ER or WS. They produce higher \textit{variance}. At peak regime, BA coercion standard deviation is 11.6\%, versus 4.5\% for ER and 8.6\% for WS. This pattern is scale-stable: at $n = 2{,}000$, BA standard deviation is 13.9\% versus 1.0\% for ER and 5.4\% for WS. The source of this variance is hub sensitivity: cascade outcomes depend on whether initial adopters are positioned near high-degree hubs, a property that varies across random seeds.
+
+\subsection{Scale Robustness}
+
+The protective effect of Watts--Strogatz topology strengthens with network size (Table~\ref{tab:scale}).
+
+\begin{table}[H]
+\centering
+\caption{ER vs.\ WS coercion rates and effect sizes by network size.}
+\label{tab:scale}
+\begin{tabular}{rcccc}
+\toprule
+$n$ & \textbf{ER coercion} & \textbf{WS coercion} & \textbf{Cohen's} $d$ & $p$ \\
+\midrule
+300 & 54.3\% & 47.6\% & 0.99 & $< 0.001$ \\
+500 & 55.7\% & 51.6\% & 0.96 & 0.005 \\
+1{,}000 & 56.2\% & 48.9\% & 1.64 & $< 10^{-5}$ \\
+2{,}000 & 57.7\% & 49.8\% & 2.04 & $< 10^{-6}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The effect size approximately doubles from $n = 300$ to $n = 2{,}000$, though the trend is not strictly monotonic: Cohen's $d$ dips slightly from 0.99 to 0.96 between $n = 300$ and $n = 500$ before climbing sharply to 1.64 and 2.04. The $n = 300$ data come from the production sweep (Dataset 1) while the $n \geq 500$ data come from the extended scale sweep (Dataset 5) with slightly different seed sets and 20 rather than 30 replicates, which may account for the minor non-monotonicity. The dominant pattern is clear: the protective effect of clustered topology strengthens substantially with scale. At $n = 2{,}000$, WS adoption drops to 27.2\% (vs.\ 86.6\% for ER), indicating that clustered topology increasingly resists contagion at scale. ER coercion rates tighten (SD = 1.0\% at $n = 2{,}000$), suggesting convergence to a deterministic equilibrium, while WS maintains moderate variance (SD = 5.4\%).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig4_scale_robustness.png}
+\caption{Cohen's $d$ for the ER--WS coercion rate difference at peak regime as a function of network size. The protective effect of clustered topology strengthens with scale, exceeding the ``large effect'' threshold ($d = 0.8$) at all tested sizes and reaching $d = 2.04$ at $n = 2{,}000$.}
+\label{fig:scale}
+\end{figure}
+
+\subsection{Preference Drift}
+
+When agent preferences are allowed to drift toward neighborhood averages (Equation~\ref{eq:drift}), three changes occur (Table~\ref{tab:drift}).
+
+\begin{table}[H]
+\centering
+\caption{Outcome categories under preference drift at peak regime. ``Visible coercion'' counts only agents classified as coerced by final-state measurement; ``True coercion'' includes converted agents whose preferences were rewritten before adoption. Counts are per-run means.}
+\label{tab:drift}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Condition} & \textbf{Willing} & \textbf{Converted} & \textbf{Coerced} & \textbf{Visible} & \textbf{True} \\
+\midrule
+Fixed ($\delta = 0$) & 107.1 & 0.0 & 118.3 & 52.5\% & 52.5\% \\
+Slow ($\delta = 0.02$) & 103.8 & 0.4 & 141.4 & 57.6\% & 57.7\% \\
+Fast ($\delta = 0.05$) & 100.9 & 1.2 & 171.6 & 62.7\% & 63.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+First, coercion increases: from 118.3 to 171.6 coerced agents per run under fast drift. Second, a small but meaningful number of agents (155 across all runs at fast drift) have their preferences flipped from negative to positive, appearing as willing adopters in final-state measurement. Third, the model's overall explanatory power decreases (pseudo-$R^2$ from 0.232 to 0.034) because preference drift introduces noise into the utility signal.
+
+Two of the three structural predictors survive drift with cluster-robust inference. At fast drift, RNF remains significant ($\OR = 0.806$, $p = 0.006$). Clustering coefficient, however, loses significance under fast drift ($\OR = 0.794$, $p = 0.164$), as does betweenness centrality ($\OR = 0.800$, $p = 0.076$). Individual preference strength retains statistical significance but loses most of its predictive power ($\OR$ shifts from 0.269 to 0.718). The overall model's explanatory power collapses (pseudo-$R^2$ from 0.232 to 0.034), indicating that drift introduces noise that overwhelms the structural signal. The pattern suggests a hierarchy of robustness: RNF is the most durable structural predictor, surviving both pressure regime shifts and preference drift; clustering is robust to pressure but not to drift; and betweenness is the most fragile.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig5_preference_drift.png}
+\caption{Population outcome breakdown by preference drift rate at peak regime. Coercion rises from 39\% to 57\% of the population as drift increases. At fast drift ($\delta = 0.05$), a small fraction of agents are \textit{converted}: their preferences were rewritten before adoption, making their coercion invisible to any post-hoc measurement. Percentages show combined coerced and converted fractions.}
+\label{fig:drift}
+\end{figure}
+
+\subsection{Coercion Threshold Robustness}
+
+The structural predictors are invariant to the operationalization threshold (Table~\ref{tab:threshold}).
+
+\begin{table}[H]
+\centering
+\caption{Key predictor odds ratios under three coercion thresholds (cluster-robust $p$-values).}
+\label{tab:threshold}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Predictor} & \textbf{Strict} ($u < -0.1$) & \textbf{Original} ($u < 0$) & \textbf{Lenient} ($u < 0.05$) \\
+\midrule
+$|u_i|$ & 0.909$^{***}$ & 0.269$^{***}$ & 0.269$^{***}$ \\
+RNF & 0.793$^{***}$ & 0.657$^{***}$ & 0.657$^{***}$ \\
+Clustering & 0.844$^{*}$ & 0.751$^{*}$ & 0.751$^{*}$ \\
+Betweenness & 0.881$^{*}$ & 0.839 (n.s.) & 0.839 (n.s.) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All three thresholds produce the same predictor ranking for the top three predictors ($|u_i|$, RNF, clustering) and the same direction of effects. Betweenness centrality reaches significance only under the strict threshold; it is marginal under the other two. The core findings are not an artifact of where the coercion boundary is drawn.
+
+\subsection{Counterfactual Decomposition: Structure vs.\ Composition}
+\label{sec:counterfactual}
+
+A potential identification concern is that RNF is computed from initial utilities, and the outcome (coerced adoption) is also defined using initial utility. This creates mechanical dependence between predictor and outcome: is RNF measuring a \textit{structural} effect of neighborhood composition, or merely reflecting spatially correlated preferences?
+
+We address this with two counterfactual experiments that decouple topology from preference assignment.
+
+\subsubsection{Experiment Design}
+
+We run three conditions at peak regime for each of the 90 topology $\times$ seed combinations ($N = 16{,}938$ resistant agents per condition). The baseline condition uses the original utility-to-node assignment from the production run. The reshuffled condition preserves the same network but randomly permutes utilities across nodes, maintaining both the utility distribution and the network topology exactly while breaking any spatial correlation between preferences and network position. The rewired condition preserves the same utilities at the same node positions but replaces the network with an Erd\H{o}s--R\'{e}nyi graph of matched density, destroying topology-specific structure (clustering, degree heterogeneity) while retaining the original preference-position mapping.
+
+The logic: if RNF still predicts coercion after reshuffling, the effect is structural (topology creates protective neighborhoods regardless of which agents land where). If rewiring eliminates the topology gap in coercion rates, topology matters beyond neighborhood composition alone.
+
+\subsubsection{Results}
+
+\textbf{RNF is structural, not compositional.} RNF predicts protection from coercion in all three conditions (Table~\ref{tab:counterfactual_rnf}, Figure~\ref{fig:counterfactual}B). After reshuffling, RNF is actually a \textit{stronger} predictor ($\OR = 0.581$, $p < 0.001$) than at baseline ($\OR = 0.657$), likely because reshuffling reduces noise from any incidental preference-topology correlation. After rewiring, RNF remains significant ($\OR = 0.630$, $p < 0.001$). The effect is not an artifact of correlated preferences.
+
+\begin{table}[H]
+\centering
+\caption{RNF odds ratios across counterfactual conditions (cluster-robust, peak regime).}
+\label{tab:counterfactual_rnf}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Condition} & \textbf{RNF OR} & \textbf{95\% CI} & $p$ \\
+\midrule
+Baseline & 0.657 & [0.610, 0.708] & $< 0.001$ \\
+Reshuffled & 0.581 & [0.543, 0.621] & $< 0.001$ \\
+Rewired & 0.630 & [0.592, 0.671] & $< 0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Topology gap vanishes under rewiring.} The coercion rate gap between Watts--Strogatz and Erd\H{o}s--R\'{e}nyi is 15.3 percentage points at baseline (Cohen's $d = 0.73$, $p = 0.007$). After reshuffling, the gap narrows to 8.5 points ($d = 0.47$, $p = 0.076$). After rewiring, the gap vanishes entirely ($-1.3$ points, $d = -0.08$, $p = 0.745$; Figure~\ref{fig:counterfactual}A). This demonstrates two distinct components: (a) topology creates different local neighborhood structures that protect against coercion (the effect that survives reshuffling), and (b) the natural utility draw creates some incidental preference-topology correlation that amplifies the gap (the component that reshuffling removes). When topology is destroyed entirely by rewiring, all protective advantage disappears, confirming that the structure matters.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig6_counterfactual_decomposition.pdf}
+\caption{Counterfactual decomposition. (A)~Coercion rates among resistant agents by topology and condition. The topology gap (WS $<$ BA $<$ ER) is present at baseline, narrows after reshuffling utilities, and vanishes after rewiring networks. Error bars are 95\% CIs across 30 seeds. (B)~RNF odds ratios remain significant ($p < 0.001$, cluster-robust) in all three conditions, confirming the effect is structural.}
+\label{fig:counterfactual}
+\end{figure}
+
+\subsection{Spatial Structure of Coercion: Model vs.\ Null}
+\label{sec:nontautology}
+
+A second identification concern is that coercion is ``built into'' the model: if social pressure can override negative preferences in the decision rule, coerced adoption must exist. The question is whether the \textit{spatial pattern} of coercion is an emergent property of the contagion dynamics or merely a mechanical consequence of the definition.
+
+We construct a null model that preserves the definitional relationship between negative utility and coerced status while eliminating the contagion dynamics. For each run, we assign adoption randomly to agents with probability equal to the run's observed adoption rate; coercion is then mechanically coded as adopted $\land$ $u_i < 0$. This null preserves the aggregate coercion rate but removes any spatial structure arising from the contagion process. We compute Moran's $I$ (spatial autocorrelation on the network adjacency matrix) for both the model's actual coercion outcomes and 100 null replicates per run.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{fig7_morans_i.pdf}
+\caption{Spatial autocorrelation (Moran's $I$) of coercion outcomes. The model produces significantly positive spatial clustering of coerced agents in all topologies ($p < 0.001$, one-sample $t$-test vs.\ zero). The null model (random adoption, mechanical coercion coding) shows near-zero autocorrelation. The effect is strongest in Watts--Strogatz networks ($\bar{z} = 3.5$, 83\% of runs significant at $\alpha = 0.05$), consistent with clustering amplifying local coercion dynamics.}
+\label{fig:morans}
+\end{figure}
+
+Model coercion is spatially clustered in all topologies (Moran's $I > 0$, $p < 0.001$). The null model shows near-zero spatial autocorrelation ($\bar{I} \approx 0$). The effect is strongest in Watts--Strogatz networks ($\bar{I} = 0.096$, mean $z = 3.5$ vs.\ null), consistent with the finding that WS clustering amplifies local protection. Coerced agents are more likely to be neighbors of other coerced agents than expected by chance. This spatial structure is an emergent property of the contagion dynamics and is absent when adoption is assigned randomly. While the model's decision rule does guarantee that coercion is \textit{possible}, the specific pattern of who gets coerced and where is a genuine result of network-mediated pressure propagation.
+
+% ══════════════════════════════════════════════════════════════
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{The Invisible Coercion Problem}
+
+The central finding of this paper is that standard adoption metrics are structurally blind to coercion. At peak pressure regime, approximately 50\% of adopters across all topologies adopted against their private preference. Standard contagion models report adoption rate; ours reveals that roughly half of that adoption was coerced. A system designer, policymaker, or platform operator measuring only adoption would see a successful diffusion process and miss that a substantial fraction of participants were structurally compelled. This blindness is compounded by recent findings that multiple interacting simple contagions produce population-level curves indistinguishable from complex contagion \citep{hebert2020macroscopic}: if the mechanism of spread is already ambiguous from aggregate data, the nature of individual adoption (willing versus coerced) is even more so.
+
+The preference drift extension sharpens this problem. Under fast drift, 63.1\% of adopters are either coerced or converted (initially resistant, preference rewritten). The converted agents are particularly concerning: they adopted willingly \textit{by the time they adopted}, but only because sustained network pressure shifted their evaluative baseline. No post-hoc measurement of their preference at the time of adoption would detect this. The coercion is invisible not only to the observer but potentially to the agent.
+
+\subsection{Neuroethical Implications}
+
+The finding that network structure overrides individual preference resonates with neuroscience evidence on social conformity. \citet{klucharev2009reinforcement} demonstrated that social disagreement triggers prediction error signals in the rostral cingulate zone and modulates activity in the ventral striatum, neural substrates associated with value computation. \citet{berns2005neurobiological} showed that conformity pressure alters perceptual processing itself, not merely decision output.
+
+These findings suggest a neural mechanism for the preference drift we model: network pressure does not simply force action against preference, it perturbs the neural evaluation system that generates preference. Clustering may protect by providing redundant social signals that confirm the agent's existing evaluation, preventing the prediction error cascade that drives preference rewriting. Hub-mediated networks, by contrast, expose agents to structurally diverse and potentially contradictory signals that generate persistent prediction errors.
+
+We offer this as a direction for future empirical work, not as a claim our simulation establishes. The simulation demonstrates that structural protection operates at the behavioral level; the neuroethics literature suggests it may also operate at the neural level.
+
+\subsection{Policy Implications}
+
+If network topology determines coercion vulnerability, then designing or modifying network topology is an intervention on autonomy. Platform architectures that fragment local clustering (algorithmic feed curation, interest-based rather than community-based grouping) and route connections through central hubs (recommendation algorithms, influencer amplification) shift populations from protective topologies toward vulnerable ones.
+
+This has implications for technology governance, institutional design, and community planning. Interventions that preserve or build local clustering, such as supporting neighborhood-level social structures, designing platforms that maintain triadic closure, ensuring bidirectional communication channels) are structural protections against coercion that operate independently of individual resilience or information literacy. There is a productive irony here: the same clustering that \citet{centola2018behavior} identified as the engine of complex contagion is what our model identifies as the shield against coerced adoption. A platform designer who fragments clustering to slow unwanted contagion simultaneously removes the structural conditions that protect individual autonomy.
+
+The BA variance finding adds a distinct policy concern. In hub-dominated networks, coercion outcomes are unpredictable. A policymaker cannot forecast whether a given intervention will produce high or low coercion because the outcome depends on initial conditions relative to hub positions. This is a fundamentally different governance challenge than the deterministic ER case or the predictably protective WS case.
+
+\subsection{Limitations}
+
+\textbf{RNF identification.} Resistant neighbor fraction at $t = 0$ is computed from initial utilities, creating mechanical dependence with the outcome variable. Section~\ref{sec:counterfactual} addresses this through counterfactual experiments: RNF predicts protection even after random reshuffling of utilities across nodes ($\OR = 0.581$, $p < 0.001$), confirming a structural rather than compositional effect. The residual concern is that RNF, even when structurally determined, acts as a mediator of topology's effect on coercion (topology $\to$ RNF $\to$ coercion risk) and should not be interpreted as an exogenous causal variable.
+
+\textbf{Converted agent counts.} The preference drift extension produces only 1.2 converted agents per run at fast drift ($\delta = 0.05$), a total of 155 across all runs. While the theoretical argument for invisible coercion through preference rewriting is conceptually important, the empirical evidence from this simulation is modest. Higher drift rates, longer simulation horizons, or alternative drift mechanisms may produce more substantial conversion; this is a direction for future work.
+
+\textbf{Coercion operationalization.} Our definition (adoption with negative private utility) captures the behavioral signature of Frankfurt's structural unfreedom but not its full philosophical content. Frankfurt's account involves second-order volitions (wanting to want otherwise) and counterfactual unavailability of alternatives, neither of which is explicitly modeled. Our robustness check across three thresholds demonstrates that the specific cutoff value does not affect the findings, but the deeper question of whether negative-utility adoption constitutes genuine unfreedom in Frankfurt's sense requires philosophical argument beyond the scope of this simulation.
+
+\textbf{Fixed network topology.} Real social networks are dynamic. Edges form and dissolve in response to the contagion process itself \citep{gross2008adaptive}. Our static topology assumption isolates the effect of structure on coercion but may overestimate structural protection in systems where clustering degrades under adoption pressure.
+
+\textbf{Parameter calibration.} The utility equation coefficients are not fitted to empirical data from a specific domain. The paper's contribution is in identifying structural relationships (which features predict coercion, under what pressure regimes, and at what scales) rather than in domain-specific prediction. Application to specific contexts (social media platform adoption, workplace norm compliance, political opinion cascades) requires domain-specific calibration.
+
+\textbf{Stylized topologies.} Real networks are not pure ER, BA, or WS graphs. They exhibit community structure, degree heterogeneity within communities, temporal dynamics, and multiplex layering. The stylized comparison isolates mechanisms (clustering vs.\ hub structure vs.\ randomness) but does not directly characterize empirical networks. Testing on real-world network datasets is a priority for future work.
+
+\textbf{Scale.} While we demonstrate robustness to $n = 2{,}000$ with strengthening effect sizes, real social networks operate at scales of $10^5$ to $10^9$. Computational extension to these scales, potentially using mean-field approximations for the regression analysis, is needed.
+
+% ══════════════════════════════════════════════════════════════
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have demonstrated that network topology is a determinant of coerced adoption, a class of outcomes invisible to standard contagion models. The composition of an agent's immediate neighborhood (resistant neighbor fraction) and, to a lesser but significant degree, the local density of connections (clustering coefficient) predict whether social pressure overrides individual preference. Counterfactual experiments confirm that this is a genuinely structural effect: RNF's predictive power survives random reshuffling of utilities, and the topology gap vanishes when networks are rewired. The distribution of coerced agents is spatially clustered in ways that a null model with identical aggregate coercion rates cannot reproduce. These effects are regime-dependent, peaking at intermediate pressure and vanishing at extremes. They are robust to scale, strengthening from $n = 300$ to $n = 2{,}000$. RNF remains significant even under preference drift, though clustering loses significance when drift is fast and the overall model's explanatory power is substantially reduced. And the core findings are robust to the operationalization of coercion itself.
+
+The practical implication is direct: any system that measures adoption without distinguishing willing from coerced adoption is missing information that is both measurable and consequential. Network topology is not ethically neutral with respect to individual autonomy. Designing systems that preserve local clustering is a structural protection against coercion. Designing systems that fragment clustering and centralize through hubs is a structural intervention that increases coercion vulnerability. Both deserve to be recognized as such.
+
+% ══════════════════════════════════════════════════════════════
+\section*{Data and Code Availability}
+
+The simulation code, production datasets (8 core datasets plus 2 counterfactual datasets), and analysis scripts are available at \url{https://github.com/hiddeninformationlabs/network-coercion-model}. The model is implemented in Python using NetworkX for graph generation and statsmodels for regression analysis. All figures and statistical claims in this paper can be reproduced from the provided scripts and data.
+
+% ══════════════════════════════════════════════════════════════
+\section*{Declaration of Competing Interests}
+
+The author declares no competing interests, financial or otherwise.
+
+\section*{Funding}
+
+This research received no external funding.
+
+\section*{Ethics Statement}
+
+This study uses computational simulation with synthetic agents and does not involve human subjects, animal subjects, or personal data. No ethics review was required.
+
+\section*{Author Contributions}
+
+A.M.M.\ conceived the study, designed the model, implemented the simulation code, conducted all analyses, and wrote the manuscript. This is a single-author contribution.
+
+\section*{Acknowledgments}
+
+The author thanks the open-source communities behind Python, NetworkX, and statsmodels, without which this work would not have been possible.
+
+% ══════════════════════════════════════════════════════════════
+
+\begin{thebibliography}{99}
+
+\bibitem[Barab\'{a}si \& Albert, 1999]{barabasi1999emergence}
+Barab\'{a}si, A.-L., \& Albert, R. (1999).
+Emergence of scaling in random networks.
+\textit{Science}, 286(5439), 509--512.
+
+\bibitem[Berns et al., 2005]{berns2005neurobiological}
+Berns, G.~S., Chappelow, J., Zink, C.~F., Pagnoni, G., Martin-Skurski, M.~E., \& Richards, J. (2005).
+Neurobiological correlates of social conformity and independence during mental rotation.
+\textit{Biological Psychiatry}, 58(3), 245--253.
+
+\bibitem[Bernardo et al., 2024]{bernardo2024bounded}
+Bernardo, C., Altafini, C., Proskurnikov, A., \& Vasca, F. (2024).
+Bounded confidence opinion dynamics: A survey.
+\textit{Automatica}, 159, 111302.
+
+\bibitem[Cameron et al., 2008]{cameron2008bootstrap}
+Cameron, A.~C., Gelbach, J.~B., \& Miller, D.~L. (2008).
+Bootstrap-based improvements for inference with clustered errors.
+\textit{Review of Economics and Statistics}, 90(3), 414--427.
+
+\bibitem[Centola, 2010]{centola2010spread}
+Centola, D. (2010).
+The spread of behavior in an online social network experiment.
+\textit{Science}, 329(5996), 1194--1197.
+
+\bibitem[Centola, 2018]{centola2018behavior}
+Centola, D. (2018).
+\textit{How Behavior Spreads: The Science of Complex Contagions}.
+Princeton University Press.
+
+\bibitem[Centola \& Macy, 2007]{centola2007complex}
+Centola, D., \& Macy, M. (2007).
+Complex contagions and the weakness of long ties.
+\textit{American Journal of Sociology}, 113(3), 702--734.
+
+\bibitem[Cheng \& Yu, 2019]{cheng2019opinion}
+Cheng, C., \& Yu, C. (2019).
+Opinion dynamics with bounded confidence and group pressure.
+\textit{Physica A}, 532, 121900.
+
+\bibitem[DeGroot, 1974]{degroot1974reaching}
+DeGroot, M.~H. (1974).
+Reaching a consensus.
+\textit{Journal of the American Statistical Association}, 69(345), 118--121.
+
+\bibitem[Fischer \& Ravizza, 1998]{fischer1998responsibility}
+Fischer, J.~M., \& Ravizza, M. (1998).
+\textit{Responsibility and Control: A Theory of Moral Responsibility}.
+Cambridge University Press.
+
+\bibitem[Frankfurt, 1971]{frankfurt1971freedom}
+Frankfurt, H.~G. (1971).
+Freedom of the will and the concept of a person.
+\textit{The Journal of Philosophy}, 68(1), 5--20.
+
+\bibitem[Friedkin \& Johnsen, 1990]{friedkin1990social}
+Friedkin, N.~E., \& Johnsen, E.~C. (1990).
+Social influence and opinions.
+\textit{Journal of Mathematical Sociology}, 15(3--4), 193--206.
+
+\bibitem[Granovetter, 1978]{granovetter1978threshold}
+Granovetter, M. (1978).
+Threshold models of collective behavior.
+\textit{American Journal of Sociology}, 83(6), 1420--1443.
+
+\bibitem[Gross \& Blasius, 2008]{gross2008adaptive}
+Gross, T., \& Blasius, B. (2008).
+Adaptive coevolutionary networks: A review.
+\textit{Journal of the Royal Society Interface}, 5(20), 259--271.
+
+\bibitem[Guilbeault \& Centola, 2021]{guilbeault2021topological}
+Guilbeault, D., \& Centola, D. (2021).
+Topological measures for identifying and predicting the spread of complex contagions.
+\textit{Nature Communications}, 12, 4430.
+
+\bibitem[H\'{e}bert-Dufresne et al., 2020]{hebert2020macroscopic}
+H\'{e}bert-Dufresne, L., Scarpino, S.~V., \& Young, J.-G. (2020).
+Macroscopic patterns of interacting contagions are indistinguishable from social reinforcement.
+\textit{Nature Physics}, 16(4), 426--431.
+
+\bibitem[Horsevad et al., 2022]{horsevad2022transition}
+Horsevad, N., Mateo, D., Kooij, R.~E., Barrat, A., \& Bouffanais, R. (2022).
+Transition from simple to complex contagion in collective decision-making.
+\textit{Nature Communications}, 13, 1442.
+
+\bibitem[Klucharev et al., 2009]{klucharev2009reinforcement}
+Klucharev, V., Hyto\"{o}nen, K., Rijpkema, M., Smidts, A., \& Fern\'{a}ndez, G. (2009).
+Reinforcement learning signal predicts social conformity.
+\textit{Neuron}, 61(1), 140--151.
+
+\bibitem[Mele, 2006]{mele2006free}
+Mele, A.~R. (2006).
+\textit{Free Will and Luck}.
+Oxford University Press.
+
+\bibitem[Miller, 2009]{miller2009spread}
+Miller, J.~C. (2009).
+Spread of infectious disease through clustered populations.
+\textit{Journal of the Royal Society Interface}, 6(41), 1121--1134.
+
+\bibitem[Pastor-Satorras \& Vespignani, 2001]{pastor2001epidemic}
+Pastor-Satorras, R., \& Vespignani, A. (2001).
+Epidemic spreading in scale-free networks.
+\textit{Physical Review Letters}, 86(14), 3200.
+
+\bibitem[Watts, 2002]{watts2002simple}
+Watts, D.~J. (2002).
+A simple model of global cascades on random networks.
+\textit{Proceedings of the National Academy of Sciences}, 99(9), 5766--5771.
+
+\bibitem[Watts \& Strogatz, 1998]{watts1998collective}
+Watts, D.~J., \& Strogatz, S.~H. (1998).
+Collective dynamics of `small-world' networks.
+\textit{Nature}, 393(6684), 440--442.
+
+\bibitem[Xia et al., 2023]{xia2023expressed}
+Xia, W., Liang, H., \& Ye, M. (2023).
+Asynchronous expressed and private opinion dynamics on influence networks.
+\textit{IEEE Transactions on Control of Network Systems}, 10(2), 544--555.
+
+\end{thebibliography}
+
+\end{document}
